@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vectron Juniors - Jocuri Despre Trecutul Dejului | FLL România</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="page-home" id="username-check">
+  <div class="app">
+    <main class="home">
+      <header class="hero">
+        <div class="badge">FLL România • Vectron-Juniors</div>
+        <h1>Descoperiri de la Dej</h1>
+        <p class="subtitle">Joacă și învață despre trecutul nostru!</p>
+        <p class="intro">Alege un joc și descoperă fragmente de mamut, monoxila medievală, Păzitorul, Geniusul roman, pietrele funerare și brățările antice!</p>
+        <div class="header-actions">
+          <span class="username-display" id="username-display"></span>
+          <button class="change-name-btn" id="change-name-btn" style="display: none;">Schimbă numele</button>
+          <a href="leaderboard.html" class="leaderboard-link">🏆 Clasament</a>
+        </div>
+      </header>
+      
+      <p class="unlock-hint">Completează toate cele 7 jocuri pentru a debloca Turnul LEGO! 🧱</p>
+      <nav class="game-grid">
+        <a href="mammoth.html" class="game-card" data-game="mammoth">
+          <span class="game-status" data-status="mammoth"></span>
+          <span class="game-icon">🦣</span>
+          <h3>Memoria Mamutului</h3>
+          <p>Găsește perechile de fragmente fosile</p>
+        </a>
+        <a href="monoxyl.html" class="game-card" data-game="monoxyl">
+          <span class="game-status" data-status="monoxyl"></span>
+          <span class="game-icon">🛶</span>
+          <h3>Aventura pe Someș</h3>
+          <p>Condu barca cu sarea pe râu</p>
+        </a>
+        <a href="pazitorul.html" class="game-card" data-game="pazitorul">
+          <span class="game-status" data-status="pazitorul"></span>
+          <span class="game-icon">🗿</span>
+          <h3>Puzzle-ul Păzitorului</h3>
+          <p>Asamblează statuia misterioasă</p>
+        </a>
+        <a href="genius.html" class="game-card" data-game="genius">
+          <span class="game-status" data-status="genius"></span>
+          <span class="game-icon">🏛️</span>
+          <h3>Geniusul Roman</h3>
+          <p>Răspunde la întrebări despre Roma antică</p>
+        </a>
+        <a href="pietre.html" class="game-card" data-game="pietre">
+          <span class="game-status" data-status="pietre"></span>
+          <span class="game-icon">📜</span>
+          <h3>Decoderul Înscrisurilor</h3>
+          <p>Decodifică simbolurile de pe pietrele funerare</p>
+        </a>
+        <a href="bratari.html" class="game-card" data-game="bratari">
+          <span class="game-status" data-status="bratari"></span>
+          <span class="game-icon">⌚</span>
+          <h3>Modelul Brățărilor</h3>
+          <p>Repetă modelul brățărilor antice</p>
+        </a>
+        <a href="secera.html" class="game-card" data-game="secera">
+          <span class="game-status" data-status="secera"></span>
+          <span class="game-icon">🌾</span>
+          <h3>Secera cu limbă</h3>
+          <p>Strânge cerealele în timp limitat</p>
+        </a>
+        <a href="legos.html" class="game-card game-card-lego" id="lego-game-card" data-game="lego" data-locked="true">
+          <span class="game-status game-status-lego" data-status="lego"></span>
+          <span class="game-icon">🧱</span>
+          <h3>🏆 Turnul LEGO</h3>
+          <p class="lego-lock-msg">Completează toate cele 7 jocuri pentru a debloca!</p>
+          <p class="lego-progress" id="lego-progress"></p>
+        </a>
+      </nav>
+      
+      <footer class="home-footer">
+        <p>Proiect FLL Nationals România • Vectron-Juniors</p>
+      </footer>
+    </main>
+  </div>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="firebase-db.js"></script>
+  <script src="user.js"></script>
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const name = getUserName();
+      const el = document.getElementById('username-display');
+      if (el) el.textContent = name ? 'Salut, ' + name + '!' : '';
+      const changeBtn = document.getElementById('change-name-btn');
+      if (changeBtn) {
+        changeBtn.style.display = name ? 'inline-block' : 'none';
+        changeBtn.onclick = () => showUsernameModal();
+      }
+      document.querySelectorAll('.game-card[data-game]').forEach(card => {
+        const gameId = card.dataset.game;
+        const statusEl = card.querySelector('.game-status');
+        if (!statusEl || !gameId) return;
+        if (gameId === 'lego') {
+          if (hasUnlockedLegoGame()) {
+            statusEl.textContent = isGameWon('lego') ? '✓ Complet!' : 'De jucat';
+            statusEl.className = 'game-status game-status-lego ' + (isGameWon('lego') ? 'game-status-done' : 'game-status-todo');
+            statusEl.style.display = '';
+          } else {
+            statusEl.style.display = 'none';
+          }
+        } else {
+          statusEl.textContent = isGameWon(gameId) ? '✓ Complet!' : 'De jucat';
+          statusEl.className = 'game-status ' + (isGameWon(gameId) ? 'game-status-done' : 'game-status-todo');
+        }
+      });
+      const legoCard = document.getElementById('lego-game-card');
+      const legoProgress = document.getElementById('lego-progress');
+      if (legoCard) {
+        if (hasUnlockedLegoGame()) {
+          legoCard.classList.remove('game-card-locked');
+          legoCard.dataset.locked = 'false';
+          legoCard.querySelector('.lego-lock-msg').textContent = 'Construiește turnul de cărămizi LEGO!';
+          legoCard.querySelector('.lego-progress').style.display = 'none';
+        } else {
+          const n = getLegoProgress();
+          if (legoProgress) legoProgress.textContent = n + ' / 7 jocuri complete';
+          legoCard.addEventListener('click', (e) => {
+            if (legoCard.dataset.locked === 'true') e.preventDefault();
+          });
+        }
+      }
+    });
+  </script>
+</body>
+</html>

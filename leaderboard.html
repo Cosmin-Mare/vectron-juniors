@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clasament | Vectron-Juniors</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="page-home">
+  <div class="app">
+    <header class="hero">
+      <div class="badge">FLL România • Vectron-Juniors</div>
+      <h1>🏆 Clasament</h1>
+      <p class="subtitle">Cele mai bune scoruri!</p>
+      <a href="index.html" class="back-btn" style="margin-bottom: 20px;">← Înapoi</a>
+    </header>
+    <div id="leaderboard-container" class="leaderboard-container">
+      <p class="leaderboard-loading">Se încarcă...</p>
+    </div>
+    <p id="leaderboard-error" class="leaderboard-error hidden">Firebase nu este configurat. Adaugă cheile în firebase-config.js</p>
+  </div>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="firebase-db.js"></script>
+  <script src="user.js"></script>
+  <script>
+    const GAME_NAMES = {
+      mammoth: '🦣 Memoria Mamutului (timp)',
+      monoxyl: '🛶 Aventura pe Someș (saci)',
+      pazitorul: '🗿 Puzzle Păzitorul (timp)',
+      genius: '🏛️ Geniusul (timp)',
+      pietre: '📜 Decoder (timp)',
+      bratari: '⌚ Brățări (nivel)',
+      secera: '🌾 Secera (cereale)',
+      lego: '🧱 Turnul LEGO (cărămizi)'
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const container = document.getElementById('leaderboard-container');
+      const errorEl = document.getElementById('leaderboard-error');
+
+      if (typeof getAllLeaderboards !== 'function') {
+        container.innerHTML = '';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      getAllLeaderboards().then(leaderboards => {
+        container.querySelector('.leaderboard-loading')?.remove();
+        container.innerHTML = '';
+
+        for (const [gameId, entries] of Object.entries(leaderboards)) {
+          const card = document.createElement('div');
+          card.className = 'leaderboard-card';
+          const name = GAME_NAMES[gameId] || gameId;
+          let rows = entries.map((e, i) =>
+            `<tr><td>${i + 1}</td><td>${e.username || 'Anonim'}</td><td>${e.scoreDisplay || e.score}</td></tr>`
+          ).join('') || '<tr><td colspan="3">Niciun scor încă</td></tr>';
+          card.innerHTML = `
+            <h3>${name}</h3>
+            <table class="leaderboard-table">
+              <thead><tr><th>#</th><th>Nume</th><th>Scor</th></tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          `;
+          container.appendChild(card);
+        }
+
+        if (Object.keys(leaderboards).every(id => leaderboards[id].length === 0)) {
+          errorEl.textContent = 'Niciun scor încă. Joacă și salvează scorul!';
+          errorEl.classList.remove('hidden');
+        }
+      }).catch(() => {
+        container.innerHTML = '';
+        errorEl.classList.remove('hidden');
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secera cu limbă | Vectron-Juniors</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="page-game" data-game="secera">
+  <div class="app game-page">
+    <a href="index.html" class="back-btn">← Înapoi</a>
+    <div id="game-container" class="game-container"></div>
+  </div>
+  <div id="education-overlay" class="overlay">
+    <div class="popup-center">
+      <div class="education-popup">
+        <h3>🌾 Secera cu limbă</h3>
+        <p>Secera cu mâner în formă de limbă era o unealtă folosită în agricultură din vechime. Locuitorii zonei Dejului se ocupau cu cultivarea cerealelor. Forma specială a mânerului făcea unealta mai ușor de folosit – ingeniozitatea oamenilor din trecut!</p>
+        <button class="popup-btn" id="startGame">Începe jocul!</button>
+      </div>
+    </div>
+  </div>
+  <div id="win-overlay" class="overlay win-overlay hidden">
+    <div class="popup-center">
+      <div class="win-popup">
+        <span class="win-emoji">🌾</span>
+        <h2>Felicitări!</h2>
+        <p>Ai strâns <span id="secera-final-score">0</span> cereale!</p>
+        <p class="win-sub"><span id="win-score-label"></span> <span id="win-score-display"></span></p>
+        <a href="index.html" class="win-btn">Înapoi la jocuri</a>
+        <a href="leaderboard.html" class="win-btn" style="margin-top: 12px; background: linear-gradient(135deg, #FF9800, #FFB74D); box-shadow: 0 4px 0 #E65100;">🏆 Vezi clasamentul</a>
+      </div>
+    </div>
+  </div>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="firebase-db.js"></script>
+  <script src="user.js"></script>
+  <script src="app.js"></script>
+  <script src="games.js"></script>
+  <script>initGame('secera');</script>
+</body>
+</html>

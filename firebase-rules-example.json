@@ -1,0 +1,10 @@
+{
+  "rules": {
+    "scores": {
+      ".read": true,
+      "$gameId": {
+        ".write": true
+      }
+    }
+  }
+}
