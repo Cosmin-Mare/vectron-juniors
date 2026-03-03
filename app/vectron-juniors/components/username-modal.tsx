@@ -14,7 +14,7 @@ import { Colors } from '@/constants/theme';
 interface UsernameModalProps {
   visible: boolean;
   currentName: string;
-  onSave: (name: string) => void;
+  onSave: (name: string) => void | Promise<void>;
   onClose?: () => void;
 }
 
@@ -24,16 +24,26 @@ export function UsernameModal({
   onSave,
 }: UsernameModalProps) {
   const [name, setName] = React.useState(currentName);
+  const [error, setError] = React.useState<string | null>(null);
+  const [saving, setSaving] = React.useState(false);
   const inputRef = React.useRef<TextInput>(null);
 
   React.useEffect(() => {
     setName(currentName);
+    setError(null);
   }, [currentName, visible]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const clean = name.trim().substring(0, 20);
-    if (clean) {
-      onSave(clean);
+    if (!clean) return;
+    setError(null);
+    setSaving(true);
+    try {
+      await onSave(clean);
+    } catch (e) {
+      setError((e as Error)?.message || 'Numele este deja folosit.');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -53,17 +63,31 @@ export function UsernameModal({
               ref={inputRef}
               style={styles.input}
               value={name}
-              onChangeText={setName}
+              onChangeText={(t) => {
+                setName(t);
+                setError(null);
+              }}
               placeholder="Ex: Alex"
               maxLength={20}
               autoFocus
               autoCapitalize="words"
+              editable={!saving}
             />
+            {error ? (
+              <Text style={styles.errorText}>{error}</Text>
+            ) : null}
             <Pressable
-              style={({ pressed }) => [styles.btn, pressed && styles.btnPressed]}
+              style={({ pressed }) => [
+                styles.btn,
+                pressed && styles.btnPressed,
+                saving && styles.btnDisabled,
+              ]}
               onPress={handleSave}
+              disabled={saving}
             >
-              <Text style={styles.btnText}>Începe!</Text>
+              <Text style={styles.btnText}>
+                {saving ? 'Se verifică...' : 'Începe!'}
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -126,6 +150,15 @@ const styles = StyleSheet.create({
   },
   btnPressed: {
     opacity: 0.9,
+  },
+  btnDisabled: {
+    opacity: 0.7,
+  },
+  errorText: {
+    color: '#c62828',
+    fontSize: 14,
+    marginBottom: 12,
+    textAlign: 'center',
   },
   btnText: {
     fontFamily: 'Fredoka_700Bold',

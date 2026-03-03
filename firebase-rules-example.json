@@ -3,6 +3,13 @@
     "scores": {
       ".read": true,
       "$gameId": {
+        ".indexOn": ["score"],
+        ".write": true
+      }
+    },
+    "usernames": {
+      ".read": true,
+      "$normalized": {
         ".write": true
       }
     }

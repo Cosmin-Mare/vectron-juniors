@@ -20,6 +20,15 @@ const GAME_NAMES: Record<string, string> = {
   lego: '🧱 Turnul LEGO (cărămizi)',
 };
 
+const FETCH_TIMEOUT_MS = 10000;
+
+function fetchLeaderboardsWithTimeout() {
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => reject(new Error('timeout')), FETCH_TIMEOUT_MS);
+  });
+  return Promise.race([getAllLeaderboards(), timeoutPromise]);
+}
+
 export default function LeaderboardScreen() {
   const router = useRouter();
   const [leaderboards, setLeaderboards] = React.useState<
@@ -28,17 +37,30 @@ export default function LeaderboardScreen() {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
-    getAllLeaderboards()
+  const loadLeaderboards = React.useCallback(() => {
+    setLoading(true);
+    setError(null);
+    fetchLeaderboardsWithTimeout()
       .then((data) => {
         setLeaderboards(data);
         setError(null);
       })
-      .catch(() => {
-        setError('Nu s-au putut încărca clasamentele.');
+      .catch((err) => {
+        const message =
+          err?.message === 'timeout'
+            ? 'Se încarcă prea lent. Verifică conexiunea la internet.'
+            : 'Nu s-au putut încărca clasamentele.';
+        setError(message);
+        if (typeof __DEV__ !== 'undefined' && __DEV__ && err?.message !== 'timeout') {
+          console.error('Leaderboard fetch error:', err);
+        }
       })
       .finally(() => setLoading(false));
   }, []);
+
+  React.useEffect(() => {
+    loadLeaderboards();
+  }, [loadLeaderboards]);
 
   return (
     <ScrollView
@@ -63,7 +85,18 @@ export default function LeaderboardScreen() {
       {loading ? (
         <Text style={styles.loading}>Se încarcă...</Text>
       ) : error ? (
-        <Text style={styles.error}>{error}</Text>
+        <View style={styles.errorContainer}>
+          <Text style={styles.error}>{error}</Text>
+          <Pressable
+            style={({ pressed }) => [
+              styles.retryBtn,
+              pressed && styles.btnPressed,
+            ]}
+            onPress={loadLeaderboards}
+          >
+            <Text style={styles.retryBtnText}>Încearcă din nou</Text>
+          </Pressable>
+        </View>
       ) : leaderboards ? (
         <View style={styles.cards}>
           {Object.entries(leaderboards).map(([gameId, entries]) => (
@@ -171,12 +204,28 @@ const styles = StyleSheet.create({
     color: '#6b5b4a',
     fontSize: 16,
   },
+  errorContainer: {
+    alignItems: 'center',
+    padding: 20,
+    gap: 16,
+  },
   error: {
     textAlign: 'center',
-    padding: 20,
     color: '#c62828',
     maxWidth: 500,
-    alignSelf: 'center',
+    fontSize: 16,
+  },
+  retryBtn: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    backgroundColor: '#f97316',
+    borderRadius: 14,
+    borderWidth: 3,
+    borderColor: '#292524',
+  },
+  retryBtnText: {
+    fontFamily: 'Fredoka_700Bold',
+    color: '#fff',
     fontSize: 16,
   },
   cards: {

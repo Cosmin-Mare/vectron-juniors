@@ -109,6 +109,7 @@ După ce testezi, în **Realtime Database** → **Rules**, poți seta:
     "scores": {
       ".read": true,
       "$gameId": {
+        ".indexOn": ["score"],
         ".write": true
       }
     }
@@ -116,7 +117,7 @@ După ce testezi, în **Realtime Database** → **Rules**, poți seta:
 }
 ```
 
-Asta permite oricui să citească și să scrie scoruri. Pentru restricții suplimentare, consultă documentația Firebase.
+`.indexOn` este necesar pentru afișarea corectă a clasamentului (sortare după scor). Fără el, clasamentul poate să nu se încarce.
 
 ---
 

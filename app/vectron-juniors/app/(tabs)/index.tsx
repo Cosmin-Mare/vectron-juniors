@@ -24,6 +24,7 @@ import {
   getLegoIntroShown,
   setLegoIntroShown,
 } from '@/lib/storage';
+import { reserveUsername } from '@/lib/firebase';
 
 const CARD_WIDTH = (Dimensions.get('window').width - 48 - 24) / 2;
 const isSmallScreen = Dimensions.get('window').width < 500;
@@ -74,13 +75,16 @@ export default function HomeScreen() {
   }, []);
 
   const handleSaveName = async (name: string) => {
+    const ok = await reserveUsername(name, username);
+    if (!ok) {
+      throw new Error('Numele este deja folosit. Alege alt nume.');
+    }
     await setUserName(name);
     setUsernameState(name);
     setShowNameModal(false);
     const introShown = await getLegoIntroShown();
     if (!introShown) {
       await setLegoIntroShown();
-      // Could show lego intro modal - skipping for simplicity
     }
   };
 
