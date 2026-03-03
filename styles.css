@@ -537,6 +537,18 @@ body.page-game {
   font-size: 1rem;
 }
 
+.home-footer .privacy-link {
+  display: block;
+  margin-top: 12px;
+  color: #ea580c;
+  font-size: 0.875rem;
+  text-decoration: underline;
+}
+
+.home-footer .privacy-link:hover {
+  opacity: 0.9;
+}
+
 /* ========== GAME PAGES ========== */
 .game-page {
   max-width: 700px;
