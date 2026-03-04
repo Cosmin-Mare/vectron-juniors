@@ -106,16 +106,6 @@ export const GAMES = [
     },
   },
   {
-    id: 'genius',
-    icon: '🏛️',
-    title: 'Geniusul Roman',
-    desc: 'Răspunde la întrebări despre Roma antică',
-    education: {
-      title: '🏛️ Geniusul',
-      text: 'Geniusul roman era o statuetă care reprezenta spiritul protectiv. Soldații romani din castrul de la Cășeiu își arătau adorația prin Genius.',
-    },
-  },
-  {
     id: 'pietre',
     icon: '📜',
     title: 'Decoderul Înscrisurilor',
@@ -127,12 +117,12 @@ export const GAMES = [
   },
   {
     id: 'bratari',
-    icon: '⌚',
-    title: 'Modelul Brățărilor',
-    desc: 'Repetă modelul brățărilor antice',
+    icon: '📿',
+    title: 'Mărgeaua Diferită',
+    desc: 'Găsește mărgeaua de culoare diferită pe brățara antică',
     education: {
-      title: '⌚ Brățările antice',
-      text: 'Brățările antice aveau modele și culori distinctive. Memorează secvența ca pe vechii meșteri!',
+      title: '📿 Brățările antice',
+      text: 'Brățările antice aveau mărgele de culori diverse. Găsește mărgeaua care are o culoare diferită de celelalte!',
     },
   },
   {

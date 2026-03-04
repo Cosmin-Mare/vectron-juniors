@@ -16,7 +16,7 @@
         <div class="badge">FLL România • Vectron-Juniors</div>
         <h1>Descoperiri de la Dej</h1>
         <p class="subtitle">Joacă și învață despre trecutul nostru!</p>
-        <p class="intro">Alege un joc și descoperă fragmente de mamut, monoxila medievală, Păzitorul, Geniusul roman, pietrele funerare și brățările antice!</p>
+        <p class="intro">Alege un joc și descoperă fragmente de mamut, monoxila medievală, Păzitorul, pietrele funerare și brățările antice!</p>
         <div class="header-actions">
           <span class="username-display" id="username-display"></span>
           <button class="change-name-btn" id="change-name-btn" style="display: none;">Schimbă numele</button>
@@ -24,8 +24,15 @@
         </div>
       </header>
       
-      <p class="unlock-hint">Completează toate cele 7 jocuri pentru a debloca Turnul LEGO! 🧱</p>
+      <p class="unlock-hint">Completează toate cele 6 jocuri pentru a debloca Turnul LEGO! 🧱</p>
       <nav class="game-grid">
+        <a href="legos.html" class="game-card game-card-lego game-card-locked" id="lego-game-card" data-game="lego" data-locked="true">
+          <span class="game-status game-status-lego" data-status="lego"></span>
+          <span class="game-icon">🧱</span>
+          <h3>🏆 Turnul LEGO</h3>
+          <p class="lego-lock-msg">Completează toate cele 7 jocuri pentru a debloca!</p>
+          <p class="lego-progress" id="lego-progress"></p>
+        </a>
         <a href="mammoth.html" class="game-card" data-game="mammoth">
           <span class="game-status" data-status="mammoth"></span>
           <span class="game-icon">🦣</span>
@@ -44,12 +51,6 @@
           <h3>Puzzle-ul Păzitorului</h3>
           <p>Asamblează statuia misterioasă</p>
         </a>
-        <a href="genius.html" class="game-card" data-game="genius">
-          <span class="game-status" data-status="genius"></span>
-          <span class="game-icon">🏛️</span>
-          <h3>Geniusul Roman</h3>
-          <p>Răspunde la întrebări despre Roma antică</p>
-        </a>
         <a href="pietre.html" class="game-card" data-game="pietre">
           <span class="game-status" data-status="pietre"></span>
           <span class="game-icon">📜</span>
@@ -58,22 +59,15 @@
         </a>
         <a href="bratari.html" class="game-card" data-game="bratari">
           <span class="game-status" data-status="bratari"></span>
-          <span class="game-icon">⌚</span>
-          <h3>Modelul Brățărilor</h3>
-          <p>Repetă modelul brățărilor antice</p>
+          <span class="game-icon">📿</span>
+          <h3>Mărgeaua Diferită</h3>
+          <p>Găsește mărgeaua de culoare diferită pe brățara antică</p>
         </a>
         <a href="secera.html" class="game-card" data-game="secera">
           <span class="game-status" data-status="secera"></span>
           <span class="game-icon">🌾</span>
           <h3>Secera cu limbă</h3>
           <p>Strânge cerealele în timp limitat</p>
-        </a>
-        <a href="legos.html" class="game-card game-card-lego" id="lego-game-card" data-game="lego" data-locked="true">
-          <span class="game-status game-status-lego" data-status="lego"></span>
-          <span class="game-icon">🧱</span>
-          <h3>🏆 Turnul LEGO</h3>
-          <p class="lego-lock-msg">Completează toate cele 7 jocuri pentru a debloca!</p>
-          <p class="lego-progress" id="lego-progress"></p>
         </a>
       </nav>
       
@@ -126,7 +120,7 @@
           legoCard.querySelector('.lego-progress').style.display = 'none';
         } else {
           const n = getLegoProgress();
-          if (legoProgress) legoProgress.textContent = n + ' / 7 jocuri complete';
+          if (legoProgress) legoProgress.textContent = n + ' / 6 jocuri complete';
           legoCard.addEventListener('click', (e) => {
             if (legoCard.dataset.locked === 'true') e.preventDefault();
           });

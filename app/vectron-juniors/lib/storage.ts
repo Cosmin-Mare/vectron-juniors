@@ -73,7 +73,6 @@ const LEGO_REQUIRED = [
   'mammoth',
   'monoxyl',
   'pazitorul',
-  'genius',
   'pietre',
   'bratari',
   'secera',

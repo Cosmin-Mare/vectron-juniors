@@ -6,7 +6,6 @@ import { hasUnlockedLegoGame } from '@/lib/storage';
 import { EducationOverlay } from '@/components/education-overlay';
 import { MammothGame } from '@/games/mammoth-game';
 import { PazitorulGame } from '@/games/pazitorul-game';
-import { GeniusGame } from '@/games/genius-game';
 import { PietreGame } from '@/games/pietre-game';
 import { BratariGame } from '@/games/bratari-game';
 import { MonoxylGame } from '@/games/monoxyl-game';
@@ -17,7 +16,6 @@ const GAME_COMPONENTS: Record<string, React.ComponentType<object>> = {
   mammoth: MammothGame,
   monoxyl: MonoxylGame,
   pazitorul: PazitorulGame,
-  genius: GeniusGame,
   pietre: PietreGame,
   bratari: BratariGame,
   secera: SeceraGame,

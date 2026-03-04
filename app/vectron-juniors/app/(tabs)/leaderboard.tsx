@@ -6,66 +6,60 @@ import {
   Pressable,
   StyleSheet,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { getAllLeaderboards, LeaderboardEntry } from '@/lib/firebase';
+import {
+  subscribeToAllLeaderboards,
+  LeaderboardEntry,
+} from '@/lib/firebase';
 
 const GAME_NAMES: Record<string, string> = {
   mammoth: '🦣 Memoria Mamutului (timp)',
   monoxyl: '🛶 Aventura pe Someș (saci)',
   pazitorul: '🗿 Puzzle Păzitorul (timp)',
-  genius: '🏛️ Geniusul (timp)',
   pietre: '📜 Decoder (timp)',
-  bratari: '⌚ Brățări (nivel)',
+  bratari: '📿 Mărgeaua Diferită (sec)',
   secera: '🌾 Secera (cereale)',
   lego: '🧱 Turnul LEGO (cărămizi)',
 };
 
-const FETCH_TIMEOUT_MS = 10000;
-
-function fetchLeaderboardsWithTimeout() {
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    setTimeout(() => reject(new Error('timeout')), FETCH_TIMEOUT_MS);
-  });
-  return Promise.race([getAllLeaderboards(), timeoutPromise]);
-}
-
 export default function LeaderboardScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [leaderboards, setLeaderboards] = React.useState<
     Record<string, LeaderboardEntry[]> | null
   >(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
-
-  const loadLeaderboards = React.useCallback(() => {
-    setLoading(true);
-    setError(null);
-    fetchLeaderboardsWithTimeout()
-      .then((data) => {
-        setLeaderboards(data);
-        setError(null);
-      })
-      .catch((err) => {
-        const message =
-          err?.message === 'timeout'
-            ? 'Se încarcă prea lent. Verifică conexiunea la internet.'
-            : 'Nu s-au putut încărca clasamentele.';
-        setError(message);
-        if (typeof __DEV__ !== 'undefined' && __DEV__ && err?.message !== 'timeout') {
-          console.error('Leaderboard fetch error:', err);
-        }
-      })
-      .finally(() => setLoading(false));
-  }, []);
+  const [retryKey, setRetryKey] = React.useState(0);
 
   React.useEffect(() => {
-    loadLeaderboards();
-  }, [loadLeaderboards]);
+    setLoading(true);
+    setError(null);
+
+    const unsubscribe = subscribeToAllLeaderboards(
+      (data) => {
+        setLeaderboards(data);
+        setError(null);
+        setLoading(false);
+      },
+      (err) => {
+        setError(
+          err?.message?.includes('PERMISSION_DENIED')
+            ? 'Nu ai permisiunea de a citi clasamentul.'
+            : 'Nu s-au putut încărca clasamentele.'
+        );
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [retryKey]);
 
   return (
     <ScrollView
       style={styles.scroll}
-      contentContainerStyle={styles.container}
+      contentContainerStyle={[styles.container, { paddingTop: 24 + insets.top }]}
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.hero}>
@@ -92,7 +86,7 @@ export default function LeaderboardScreen() {
               styles.retryBtn,
               pressed && styles.btnPressed,
             ]}
-            onPress={loadLeaderboards}
+            onPress={() => setRetryKey((k) => k + 1)}
           >
             <Text style={styles.retryBtnText}>Încearcă din nou</Text>
           </Pressable>
@@ -147,7 +141,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fef3c7',
   },
   container: {
-    padding: 24,
+    paddingHorizontal: 24,
     paddingBottom: 48,
   },
   hero: {

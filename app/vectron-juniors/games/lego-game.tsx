@@ -19,7 +19,7 @@ const BRICK_H = 20;
 const PLATFORM_W = 72;
 const PLATFORM_H = 18;
 const FLOOR_H = 24;
-const TARGET = 20;
+const TARGET = 10;
 
 const LEGO_COLORS = [
   { fill: '#e63946' },
@@ -70,7 +70,7 @@ export function LegoGame() {
       setBricks((prev) => {
         const platformTop = H - FLOOR_H - PLATFORM_H - 8;
         let next = prev
-          .map((b) => ({ ...b, y: b.y + 5.5 }))
+          .map((b) => ({ ...b, y: b.y + 8 }))
           .filter((b) => {
             if (b.y + BRICK_H > H - FLOOR_H) {
               setGameOver(true);
@@ -98,7 +98,7 @@ export function LegoGame() {
             }
             return true;
           });
-        if (next.length === 0 && Math.random() < 0.14) {
+        if (next.length === 0 && Math.random() < 0.32) {
           next.push({
             x: Math.random() * (W - BRICK_W),
             y: -BRICK_H,

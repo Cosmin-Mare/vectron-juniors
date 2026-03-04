@@ -5,7 +5,6 @@ import {
   Pressable,
   StyleSheet,
   useWindowDimensions,
-  ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { WinModal } from '@/components/win-modal';
@@ -13,36 +12,35 @@ import { markGameWon } from '@/lib/storage';
 import { submitScore } from '@/lib/firebase';
 import { getUserName } from '@/lib/storage';
 
-const COLORS = ['gold', 'bronze', 'copper', 'silver'] as const;
-const EMOJI: Record<string, string> = {
-  gold: '🟡',
-  bronze: '🟤',
-  copper: '🟠',
-  silver: '⚪',
+const BEAD_COLORS = ['gold', 'bronze', 'copper', 'silver', 'turquoise', 'amber'] as const;
+const BEAD_STYLES: Record<string, { bg: string }> = {
+  gold: { bg: '#fbbf24' },
+  bronze: { bg: '#ea580c' },
+  copper: { bg: '#f97316' },
+  silver: { bg: '#a8a29e' },
+  turquoise: { bg: '#14b8a6' },
+  amber: { bg: '#f59e0b' },
 };
+const ROUNDS = 5;
 
-const MIN_CIRCLE = 52;
-const MAX_CIRCLE = 80;
-const MIN_GAP = 8;
+function createNewRound() {
+  const colors = [...BEAD_COLORS].sort(() => Math.random() - 0.5);
+  const pos = [0, 1, 2, 3, 4].sort(() => Math.random() - 0.5);
+  return { normalColor: colors[0]!, oddColor: colors[1]!, positions: pos, oddPos: pos[0]! };
+}
 
 export function BratariGame() {
   const router = useRouter();
   const { width } = useWindowDimensions();
-  const rowWidth = 4 * MAX_CIRCLE + 3 * 20;
-  const scale = Math.min(1, (width - 48) / rowWidth);
-  const circleSize = Math.max(MIN_CIRCLE, Math.floor(MAX_CIRCLE * scale));
-  const gap = Math.max(MIN_GAP, Math.floor(20 * scale));
+  const size = Math.min(70, (width - 80) / 5 - 12);
 
-  const [sequence, setSequence] = React.useState<string[]>([]);
-  const [playerIndex, setPlayerIndex] = React.useState(0);
-  const [isPlaying, setIsPlaying] = React.useState(false);
-  const [info, setInfo] = React.useState('Nivel 1! Memorează secvența...');
+  const [round, setRound] = React.useState(0);
+  const [roundData, setRoundData] = React.useState(() => createNewRound());
   const [showWin, setShowWin] = React.useState(false);
-  const [showLose, setShowLose] = React.useState(false);
-  const [loseLevel, setLoseLevel] = React.useState(0);
-  const [litColor, setLitColor] = React.useState<string | null>(null);
   const [startTime] = React.useState(Date.now());
   const [elapsed, setElapsed] = React.useState(0);
+
+  const newRound = React.useCallback(() => setRoundData(createNewRound()), []);
 
   React.useEffect(() => {
     const id = setInterval(() => {
@@ -54,153 +52,71 @@ export function BratariGame() {
   const formatTime = (s: number) =>
     `${Math.floor(s / 60)}:${(s % 60) < 10 ? '0' : ''}${s % 60}`;
 
-  const playSequence = React.useCallback((seq: string[]) => {
-    setIsPlaying(true);
-    setInfo(`Nivel ${seq.length}! Memorează secvența...`);
-    let i = 0;
-    const interval = setInterval(() => {
-      if (i >= seq.length) {
-        clearInterval(interval);
-        setIsPlaying(false);
-        setLitColor(null);
-        setInfo('Repetă secvența!');
-        return;
-      }
-      setLitColor(seq[i]!);
-      setTimeout(() => setLitColor(null), 450);
-      i++;
-    }, 650);
-  }, []);
-
-  const handleStart = () => {
-    const init = [COLORS[Math.floor(Math.random() * COLORS.length)]!];
-    setSequence(init);
-    setPlayerIndex(0);
-    setInfo('Nivel 1! Memorează secvența...');
-    setTimeout(() => playSequence(init), 100);
-  };
-
-  const handleColorPress = (color: string) => {
-    if (isPlaying) return;
-    if (color !== sequence[playerIndex]) {
-      setLoseLevel(sequence.length);
-      markGameWon('bratari');
-      getUserName().then((name) => {
-        submitScore('bratari', sequence.length, 'Nivel ' + sequence.length, name || 'Jucător');
-      });
-      setShowLose(true);
-      return;
-    }
-    const next = playerIndex + 1;
-    setPlayerIndex(next);
-    if (next >= sequence.length) {
-      if (sequence.length >= 5) {
+  const handlePress = (index: number) => {
+    if (index === roundData.oddPos) {
+      const next = round + 1;
+      setRound(next);
+      if (next >= ROUNDS) {
+        const sec = Math.round((Date.now() - startTime) / 1000);
         markGameWon('bratari');
         getUserName().then((name) => {
-          submitScore('bratari', sequence.length, 'Nivel ' + sequence.length, name || 'Jucător');
+          submitScore('bratari', sec, sec + ' sec', name || 'Jucător');
         });
         setShowWin(true);
         return;
       }
-      const newSeq = [
-        ...sequence,
-        COLORS[Math.floor(Math.random() * COLORS.length)]!,
-      ];
-      setSequence(newSeq);
-      setPlayerIndex(0);
-      setTimeout(() => playSequence(newSeq), 900);
+      newRound();
     }
   };
 
-  const circleStyle = (color: string) => [
-    styles.circle,
-    { width: circleSize, height: circleSize, borderRadius: circleSize / 2 },
-    color === 'gold' && styles.circleGold,
-    color === 'bronze' && styles.circleBronze,
-    color === 'copper' && styles.circleCopper,
-    color === 'silver' && styles.circleSilver,
-  ];
-
   return (
-    <ScrollView
-      contentContainerStyle={styles.scrollContent}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.container}>
-        <Text style={styles.title}>⌚ Modelul Brățărilor</Text>
-        <Text style={styles.info}>{info}</Text>
-        <Text style={styles.timer}>Timp: {formatTime(elapsed)}</Text>
-        <Text style={styles.secLabel}>Secvența:</Text>
-        <View style={[styles.sequence, { gap }]}>
-          {COLORS.map((c) => (
-            <View
-              key={c}
-              style={[
-                ...circleStyle(c),
-                litColor === c && styles.circleLit,
-              ]}
-            >
-              <Text style={[styles.circleText, { fontSize: circleSize * 0.35 }]}>
-                {EMOJI[c]}
-              </Text>
-            </View>
-          ))}
-        </View>
-        <Pressable
-          style={({ pressed }) => [styles.startBtn, pressed && styles.btnPressed]}
-          onPress={handleStart}
-        >
-          <Text style={styles.startBtnText}>Începe</Text>
-        </Pressable>
-        <Text style={styles.secLabel}>Repetă secvența:</Text>
-        <View style={[styles.input, { gap }]}>
-          {COLORS.map((c) => (
+    <View style={styles.container}>
+      <Text style={styles.title}>📿 Mărgeaua Diferită</Text>
+      <Text style={styles.info}>
+        Pe brățara antică, găsește mărgeaua de culoare diferită! Runda {round + 1} din {ROUNDS}
+      </Text>
+      <Text style={styles.timer}>Timp: {formatTime(elapsed)}</Text>
+      <Text style={styles.secLabel}>Care mărgea e de altă culoare?</Text>
+      <View style={[styles.grid, { gap: 16 }]}>
+        {roundData.positions.map((_, i) => {
+          const color = i === roundData.oddPos ? roundData.oddColor : roundData.normalColor;
+          const s = BEAD_STYLES[color] || BEAD_STYLES.gold;
+          return (
             <Pressable
-              key={c}
-              style={({ pressed }) => [
-                ...circleStyle(c),
-                pressed && styles.circlePressed,
+              key={i}
+              style={[
+                styles.bead,
+                { width: size, height: size, borderRadius: size / 2, backgroundColor: s.bg },
               ]}
-              onPress={() => handleColorPress(c)}
-            >
-              <Text style={[styles.circleText, { fontSize: circleSize * 0.35 }]}>
-                {EMOJI[c]}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-
-        <WinModal
-          visible={showWin}
-          emoji="⌚"
-          title="Felicitări!"
-          message="Ai atins nivelul 5!"
-          scoreLabel="Nivel atins"
-          scoreDisplay={'Nivel ' + sequence.length}
-          onClose={() => router.replace('/(tabs)')}
-        />
-        <WinModal
-          visible={showLose}
-          emoji="😅"
-          title="Ai greșit secvența!"
-          message="Dar ai făcut-o bine până acum – jocul e complet!"
-          scoreLabel="Nivel atins"
-          scoreDisplay={'Nivel ' + loseLevel}
-          onClose={() => {
-            setShowLose(false);
-            router.replace('/(tabs)');
-          }}
-        />
+              onPress={() => handlePress(i)}
+            />
+          );
+        })}
       </View>
-    </ScrollView>
+      <Pressable
+        style={({ pressed }) => [styles.retryBtn, pressed && styles.btnPressed]}
+        onPress={() => {
+          setRound(0);
+          newRound();
+        }}
+      >
+        <Text style={styles.retryBtnText}>Reîncearcă</Text>
+      </Pressable>
+
+      <WinModal
+        visible={showWin}
+        emoji="📿"
+        title="Felicitări!"
+        message="Ai găsit toate mărgelele diferite!"
+        scoreLabel="Timp"
+        scoreDisplay={formatTime(Math.round((Date.now() - startTime) / 1000)) + ' sec'}
+        onClose={() => router.replace('/(tabs)')}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: 24,
-  },
   container: {
     alignItems: 'center',
   },
@@ -244,70 +160,21 @@ const styles = StyleSheet.create({
     marginVertical: 12,
     color: '#292524',
   },
-  sequence: {
+  grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginVertical: 24,
   },
-  input: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-  },
-  circle: {
+  bead: {
     borderWidth: 5,
     borderColor: '#292524',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  circleGold: {
-    backgroundColor: '#fde047',
-    shadowColor: '#ca8a04',
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 1,
     shadowRadius: 0,
     elevation: 5,
   },
-  circleBronze: {
-    backgroundColor: '#f97316',
-    shadowColor: '#c2410c',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 5,
-  },
-  circleCopper: {
-    backgroundColor: '#fb923c',
-    shadowColor: '#ea580c',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 5,
-  },
-  circleSilver: {
-    backgroundColor: '#a8a29e',
-    shadowColor: '#78716c',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 1,
-    shadowRadius: 0,
-    elevation: 5,
-  },
-  circleLit: {
-    transform: [{ scale: 1.25 }],
-    shadowColor: '#fde047',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  circlePressed: {
-    opacity: 0.9,
-  },
-  circleText: {
-    fontSize: 28,
-  },
-  startBtn: {
+  retryBtn: {
     paddingVertical: 18,
     paddingHorizontal: 44,
     backgroundColor: '#fbbf24',
@@ -321,7 +188,7 @@ const styles = StyleSheet.create({
     shadowRadius: 0,
     elevation: 5,
   },
-  startBtnText: {
+  retryBtnText: {
     fontFamily: 'Fredoka_700Bold',
     fontSize: 18,
     color: '#fff',

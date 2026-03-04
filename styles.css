@@ -30,7 +30,7 @@ button, a, .game-card {
 
 body {
   font-family: 'Nunito', sans-serif;
-  background: linear-gradient(165deg, #fef3c7 0%, #fed7aa 40%, #fecaca 100%);
+  background: #fef3c7;
   min-height: 100vh;
   color: #292524;
   overflow-x: hidden;
@@ -170,26 +170,29 @@ body.page-game {
 
 .leaderboard-link {
   padding: 12px 24px;
-  background: linear-gradient(135deg, #f97316, #fbbf24);
+  background: #f97316;
   color: white;
   text-decoration: none;
   border-radius: var(--radius-sm);
   font-weight: 700;
   font-family: 'Fredoka', sans-serif;
   border: 3px solid #292524;
-  box-shadow: 0 4px 0 #c2410c;
   transition: all 0.2s;
 }
 
 .leaderboard-link:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 0 #c2410c;
+  opacity: 0.9;
 }
 
 .game-card-secret {
   border-color: #292524 !important;
   background: linear-gradient(180deg, #fef3c7 0%, #fde68a 100%) !important;
   box-shadow: 0 6px 0 #ca8a04 !important;
+}
+
+/* Lego bonus game - full width row at top, locked until all 6 games completed */
+.game-card-lego {
+  grid-column: 1 / -1;
 }
 
 /* Locked Lego bonus game - visible but greyed until all 7 games completed */
@@ -290,8 +293,34 @@ body.page-game {
   margin: 20px auto;
 }
 
-.leaderboard-error.hidden {
+.leaderboard-error.hidden,
+.hidden {
   display: none;
+}
+
+.leaderboard-error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  gap: 16px;
+}
+
+.retry-btn {
+  padding: 12px 24px;
+  background: #f97316;
+  color: white;
+  border: 3px solid #292524;
+  border-radius: 14px;
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.retry-btn:hover {
+  opacity: 0.9;
 }
 
 .win-score-line { margin-top: 12px; font-weight: 700; }
@@ -406,7 +435,7 @@ body.page-game {
 
 .badge {
   display: inline-block;
-  background: linear-gradient(135deg, #f97316, #fbbf24);
+  background: #f97316;
   color: white;
   padding: 12px 28px;
   border-radius: var(--radius-pill);
@@ -416,7 +445,6 @@ body.page-game {
   margin-bottom: 20px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  box-shadow: 0 5px 0 #c2410c;
   border: 3px solid #292524;
 }
 
@@ -450,7 +478,7 @@ body.page-game {
   color: #57534e;
   margin: 0 auto 24px auto;
   padding: 10px 20px;
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  background: #fef3c7;
   border-radius: var(--radius-sm);
   border: 3px solid #292524;
   max-width: 520px;
@@ -557,7 +585,7 @@ body.page-game {
 
 .back-btn {
   display: inline-block;
-  background: linear-gradient(135deg, #fff 0%, #fffbeb 100%);
+  background: #fff;
   border: 4px solid #292524;
   padding: 14px 28px;
   border-radius: var(--radius-sm);
@@ -567,14 +595,10 @@ body.page-game {
   text-decoration: none;
   margin-bottom: 20px;
   transition: all 0.2s;
-  box-shadow: 0 4px 0 #292524;
 }
 
 .back-btn:hover {
-  background: linear-gradient(135deg, #f97316, #fbbf24);
-  color: white;
-  transform: translateX(-4px);
-  box-shadow: 0 5px 0 #c2410c;
+  opacity: 0.9;
 }
 
 .game-container {
@@ -1092,6 +1116,41 @@ body.page-game {
 .start-pattern-btn:hover {
   transform: scale(1.06);
   box-shadow: 0 7px 0 #c2410c;
+}
+
+/* Odd One game (bratari) - bracelet beads */
+.oddone-game {
+  margin: 16px 0;
+}
+.oddone-grid {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin: 24px 0;
+  flex-wrap: wrap;
+}
+.oddone-btn {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.oddone-btn.bead-gold { background: linear-gradient(145deg, #fde047, #fbbf24) !important; box-shadow: 0 5px 0 #ca8a04; }
+.oddone-btn.bead-bronze { background: linear-gradient(145deg, #f97316, #ea580c) !important; box-shadow: 0 5px 0 #c2410c; }
+.oddone-btn.bead-copper { background: linear-gradient(145deg, #fb923c, #f97316) !important; box-shadow: 0 5px 0 #ea580c; }
+.oddone-btn.bead-silver { background: linear-gradient(145deg, #e7e5e4, #a8a29e) !important; box-shadow: 0 5px 0 #78716c; }
+.oddone-btn.bead-turquoise { background: linear-gradient(145deg, #2dd4bf, #14b8a6) !important; box-shadow: 0 5px 0 #0d9488; }
+.oddone-btn.bead-amber { background: linear-gradient(145deg, #fcd34d, #f59e0b) !important; box-shadow: 0 5px 0 #d97706; }
+.oddone-btn.wrong {
+  background: linear-gradient(145deg, #fecaca, #f87171) !important;
+  animation: oddoneShake 0.4s ease;
+}
+@keyframes oddoneShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
 }
 
 /* ========== RESPONSIVE - Mobile First ========== */

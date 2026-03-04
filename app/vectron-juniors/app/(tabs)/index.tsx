@@ -8,6 +8,7 @@ import {
   Dimensions,
   Linking,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from 'expo-router';
@@ -31,6 +32,7 @@ const isSmallScreen = Dimensions.get('window').width < 500;
 
 export default function HomeScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [username, setUsernameState] = React.useState('');
   const [showNameModal, setShowNameModal] = React.useState(false);
   const [gameStatus, setGameStatus] = React.useState<
@@ -95,7 +97,7 @@ export default function HomeScreen() {
   return (
     <ScrollView
       style={styles.scroll}
-      contentContainerStyle={styles.container}
+      contentContainerStyle={[styles.container, { paddingTop: 24 + insets.top }]}
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.hero}>
@@ -106,7 +108,7 @@ export default function HomeScreen() {
         <Text style={styles.subtitle}>Joacă și învață despre trecutul nostru!</Text>
         <Text style={styles.intro}>
           Alege un joc și descoperă fragmente de mamut, monoxila medievală,
-          Păzitorul, Geniusul roman, pietrele funerare și brățările antice!
+          Păzitorul, pietrele funerare și brățările antice!
         </Text>
         <View style={styles.actions}>
           {username ? (
@@ -128,7 +130,7 @@ export default function HomeScreen() {
 
       <View style={styles.unlockHint}>
         <Text style={styles.unlockText}>
-          Completează toate cele 7 jocuri pentru a debloca Turnul LEGO! 🧱
+          Completează toate cele 6 jocuri pentru a debloca Turnul LEGO! 🧱
         </Text>
       </View>
 
@@ -138,7 +140,7 @@ export default function HomeScreen() {
           const won = gameStatus[game.id]?.won ?? (isLego ? gameStatus.lego?.won : false);
           const status = won ? 'done' : 'todo';
           const progress = isLego && !legoUnlocked
-            ? `${legoProgress} / 7 jocuri complete`
+            ? `${legoProgress} / 6 jocuri complete`
             : undefined;
 
           return (
@@ -195,7 +197,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fef3c7',
   },
   container: {
-    padding: 24,
+    paddingHorizontal: 24,
     paddingBottom: 48,
   },
   hero: {

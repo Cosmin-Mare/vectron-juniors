@@ -31,31 +31,17 @@ function isGameWon(gameId) {
   return !!wins[gameId];
 }
 
-/** Check if all 6 main games are won (legacy - no longer used for secera) */
-function hasUnlockedSecretGame() {
-  const wins = JSON.parse(localStorage.getItem(WINS_KEY) || '{}');
-  const required = ['mammoth', 'monoxyl', 'pazitorul', 'genius', 'pietre', 'bratari'];
-  return required.every(id => wins[id]);
-}
-
-/** Check if all 7 games are won (for Lego bonus game) */
+/** Check if all 6 games are won (for Lego bonus game) */
 function hasUnlockedLegoGame() {
   const wins = JSON.parse(localStorage.getItem(WINS_KEY) || '{}');
-  const required = ['mammoth', 'monoxyl', 'pazitorul', 'genius', 'pietre', 'bratari', 'secera'];
+  const required = ['mammoth', 'monoxyl', 'pazitorul', 'pietre', 'bratari', 'secera'];
   return required.every(id => wins[id]);
 }
 
-/** Get progress (how many of 6 main games won) */
-function getWinsProgress() {
-  const wins = JSON.parse(localStorage.getItem(WINS_KEY) || '{}');
-  const required = ['mammoth', 'monoxyl', 'pazitorul', 'genius', 'pietre', 'bratari'];
-  return required.filter(id => wins[id]).length;
-}
-
-/** Get progress toward Lego unlock (X of 7) */
+/** Get progress toward Lego unlock (X of 6) */
 function getLegoProgress() {
   const wins = JSON.parse(localStorage.getItem(WINS_KEY) || '{}');
-  const required = ['mammoth', 'monoxyl', 'pazitorul', 'genius', 'pietre', 'bratari', 'secera'];
+  const required = ['mammoth', 'monoxyl', 'pazitorul', 'pietre', 'bratari', 'secera'];
   return required.filter(id => wins[id]).length;
 }
 
@@ -64,7 +50,5 @@ window.setUserName = setUserName;
 window.hasUserName = hasUserName;
 window.markGameWon = markGameWon;
 window.isGameWon = isGameWon;
-window.hasUnlockedSecretGame = hasUnlockedSecretGame;
 window.hasUnlockedLegoGame = hasUnlockedLegoGame;
-window.getWinsProgress = getWinsProgress;
 window.getLegoProgress = getLegoProgress;

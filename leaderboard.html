@@ -18,7 +18,10 @@
     <div id="leaderboard-container" class="leaderboard-container">
       <p class="leaderboard-loading">Se încarcă...</p>
     </div>
-    <p id="leaderboard-error" class="leaderboard-error hidden">Firebase nu este configurat. Adaugă cheile în firebase-config.js</p>
+    <div id="leaderboard-error-container" class="leaderboard-error-container hidden">
+      <p id="leaderboard-error" class="leaderboard-error"></p>
+      <button id="leaderboard-retry" class="retry-btn">Încearcă din nou</button>
+    </div>
   </div>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -30,22 +33,26 @@
       mammoth: '🦣 Memoria Mamutului (timp)',
       monoxyl: '🛶 Aventura pe Someș (saci)',
       pazitorul: '🗿 Puzzle Păzitorul (timp)',
-      genius: '🏛️ Geniusul (timp)',
       pietre: '📜 Decoder (timp)',
-      bratari: '⌚ Brățări (nivel)',
+      bratari: '📿 Mărgeaua Diferită (sec)',
       secera: '🌾 Secera (cereale)',
       lego: '🧱 Turnul LEGO (cărămizi)'
     };
 
-    document.addEventListener('DOMContentLoaded', () => {
+    function loadLeaderboards() {
       const container = document.getElementById('leaderboard-container');
+      const errorContainer = document.getElementById('leaderboard-error-container');
       const errorEl = document.getElementById('leaderboard-error');
 
       if (typeof getAllLeaderboards !== 'function') {
         container.innerHTML = '';
-        errorEl.classList.remove('hidden');
+        errorEl.textContent = 'Nu s-au putut încărca clasamentele.';
+        errorContainer.classList.remove('hidden');
         return;
       }
+
+      container.innerHTML = '<p class="leaderboard-loading">Se încarcă...</p>';
+      errorContainer.classList.add('hidden');
 
       getAllLeaderboards().then(leaderboards => {
         container.querySelector('.leaderboard-loading')?.remove();
@@ -69,13 +76,24 @@
         }
 
         if (Object.keys(leaderboards).every(id => leaderboards[id].length === 0)) {
-          errorEl.textContent = 'Niciun scor încă. Joacă și salvează scorul!';
-          errorEl.classList.remove('hidden');
+          const emptyMsg = document.createElement('p');
+          emptyMsg.className = 'leaderboard-error';
+          emptyMsg.textContent = 'Niciun scor încă. Joacă și salvează scorul!';
+          container.appendChild(emptyMsg);
         }
-      }).catch(() => {
+      }).catch((err) => {
         container.innerHTML = '';
-        errorEl.classList.remove('hidden');
+        const msg = (err && err.message && err.message.includes('PERMISSION_DENIED'))
+          ? 'Nu ai permisiunea de a citi clasamentul.'
+          : 'Nu s-au putut încărca clasamentele.';
+        errorEl.textContent = msg;
+        errorContainer.classList.remove('hidden');
       });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadLeaderboards();
+      document.getElementById('leaderboard-retry')?.addEventListener('click', loadLeaderboards);
     });
   </script>
 </body>

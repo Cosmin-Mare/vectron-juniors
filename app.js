@@ -12,8 +12,8 @@
       <div class="popup-center">
         <div class="education-popup username-popup lego-intro-popup">
           <h3>🧱 Bine ai venit, ${name || 'Explorator'}!</h3>
-          <p>Ai un joc bonus special: <strong>Turnul LEGO</strong>! Vezi cărțila cu cărămizile în lista de jocuri.</p>
-          <p>Completează toate cele 7 jocuri pentru a-l debloca. Mult succes! 🎉</p>
+          <p>Ai un joc bonus special: <strong>Turnul LEGO</strong>
+          <p>Completează toate cele 6 jocuri pentru a-l debloca. Mult succes! 🎉</p>
           <button class="popup-btn" id="lego-intro-ok">Am înțeles!</button>
         </div>
       </div>
@@ -37,6 +37,7 @@
           <h3>👋 Cum te cheamă?</h3>
           <p>Introdu numele tău pentru a apărea în clasament!</p>
           <input type="text" id="username-input" maxlength="20" placeholder="Ex: Alex" />
+          <p id="username-error" style="color:#c62828;font-size:14px;margin-top:8px;text-align:center;display:none;"></p>
           <button class="popup-btn" id="username-save">Începe!</button>
         </div>
       </div>
@@ -53,13 +54,23 @@
       const changeBtn = document.getElementById('change-name-btn');
       if (changeBtn) changeBtn.style.display = getUserName() ? 'inline-block' : 'none';
     };
-    btn.onclick = () => {
-      const name = setUserName(input.value);
-      if (name) {
-        closeAndRefresh();
-        if (!localStorage.getItem(LEGO_INTRO_SHOWN_KEY)) {
-          showLegoIntroModal(name);
+    btn.onclick = async () => {
+      const raw = (input.value || '').trim().substring(0, 20);
+      if (!raw) return;
+      const errEl = overlay.querySelector('#username-error');
+      if (errEl) { errEl.style.display = 'none'; errEl.textContent = ''; }
+      const current = getUserName();
+      if (typeof reserveUsername === 'function') {
+        const ok = await reserveUsername(raw, current);
+        if (!ok) {
+          if (errEl) { errEl.textContent = 'Numele este deja folosit. Alege alt nume.'; errEl.style.display = 'block'; }
+          return;
         }
+      }
+      setUserName(raw);
+      closeAndRefresh();
+      if (!localStorage.getItem(LEGO_INTRO_SHOWN_KEY)) {
+        showLegoIntroModal(raw);
       }
     };
     input.onkeydown = (e) => {

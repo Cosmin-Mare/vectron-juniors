@@ -12,6 +12,7 @@ import {
   limitToFirst,
   get,
   runTransaction,
+  onValue,
 } from 'firebase/database';
 
 const firebaseConfig = {
@@ -79,7 +80,65 @@ export async function submitScore(
   return { key: pushed.key ?? '', ...entry };
 }
 
-const LOWER_IS_BETTER = new Set(['mammoth', 'pazitorul', 'genius', 'pietre']);
+const LOWER_IS_BETTER = new Set(['mammoth', 'pazitorul', 'pietre']);
+
+function processScoreEntries(
+  rawEntries: LeaderboardEntry[],
+  gameId: string
+): LeaderboardEntry[] {
+  const bestByUser = new Map<string, LeaderboardEntry>();
+  for (const e of rawEntries) {
+    const key = (e.username || '').trim().toLowerCase();
+    if (!key) continue;
+    const existing = bestByUser.get(key);
+    const isBetter =
+      !existing ||
+      (LOWER_IS_BETTER.has(gameId)
+        ? e.score < existing.score
+        : e.score > existing.score);
+    if (isBetter) bestByUser.set(key, e);
+  }
+  const sorted = Array.from(bestByUser.values()).sort((a, b) =>
+    LOWER_IS_BETTER.has(gameId) ? a.score - b.score : b.score - a.score
+  );
+  return sorted.slice(0, 5);
+}
+
+export function subscribeToAllLeaderboards(
+  callback: (data: Record<string, LeaderboardEntry[]>) => void,
+  onError?: (err: Error) => void
+): () => void {
+  const database = initDb();
+  if (!database) {
+    callback({});
+    onError?.(new Error('Firebase nu este inițializat.'));
+    return () => {};
+  }
+
+  const scoresRef = ref(database, 'scores');
+  const handler = (snap: { val: () => unknown }) => {
+    const data = snap.val();
+    const result: Record<string, LeaderboardEntry[]> = {};
+    for (const gameId of GAME_IDS) {
+      const gameData = data?.[gameId];
+      const rawEntries: LeaderboardEntry[] = [];
+      if (gameData && typeof gameData === 'object') {
+        for (const [key, val] of Object.entries(gameData)) {
+          if (val && typeof val === 'object') {
+            rawEntries.push({
+              key,
+              ...(val as Omit<LeaderboardEntry, 'key'>),
+            });
+          }
+        }
+      }
+      result[gameId] = processScoreEntries(rawEntries, gameId);
+    }
+    callback(result);
+  };
+
+  return onValue(scoresRef, handler, (err) => onError?.(err));
+}
 
 export async function getLeaderboard(
   gameId: string,
@@ -105,23 +164,7 @@ export async function getLeaderboard(
   snap.forEach((child) => {
     entries.push({ key: child.key ?? '', ...child.val() });
   });
-
-  const bestByUser = new Map<string, LeaderboardEntry>();
-  for (const e of entries) {
-    const key = (e.username || '').trim().toLowerCase();
-    if (!key) continue;
-    const existing = bestByUser.get(key);
-    const isBetter =
-      !existing ||
-      (LOWER_IS_BETTER.has(gameId)
-        ? e.score < existing.score
-        : e.score > existing.score);
-    if (isBetter) bestByUser.set(key, e);
-  }
-  const sorted = Array.from(bestByUser.values()).sort((a, b) =>
-    LOWER_IS_BETTER.has(gameId) ? a.score - b.score : b.score - a.score
-  );
-  return sorted.slice(0, limit);
+  return processScoreEntries(entries, gameId).slice(0, limit);
 }
 
 function normalizeUsername(name: string): string {
@@ -163,7 +206,6 @@ const GAME_IDS = [
   'mammoth',
   'monoxyl',
   'pazitorul',
-  'genius',
   'pietre',
   'bratari',
   'secera',

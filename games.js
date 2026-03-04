@@ -560,94 +560,85 @@ function createDecoderGame() {
   };
 }
 
-// ============ BRĂȚĂRI PATTERN ============
+// ============ BRĂȚĂRI - Găsește Mărgeaua Diferită (Spot the Different Bead) ============
+const BRATARI_BEAD_COLORS = ['gold', 'bronze', 'copper', 'silver', 'turquoise', 'amber'];
+const BRATARI_ROUNDS = 5;
+
 function createPatternGame() {
-  let sequence = [];
-  let playerIndex = 0;
-  let isPlaying = false;
+  let round = 0;
+  let startTime = 0;
+  let normalColor = '';
+  let oddColor = '';
+  let positions = [0, 1, 2, 3, 4];
+  let oddPos = 0;
 
-  function addToSequence() {
-    sequence.push(PATTERN_COLORS[Math.floor(Math.random() * PATTERN_COLORS.length)]);
-  }
-
-  function playSequence(container) {
-    isPlaying = true;
-    const displaySeq = container.querySelector('.pattern-display');
-    if (!displaySeq) return;
-    displaySeq.querySelectorAll('.pattern-btn').forEach(b => b.classList.remove('lit'));
-    let i = 0;
-    const interval = setInterval(() => {
-      if (i >= sequence.length) {
-        clearInterval(interval);
-        isPlaying = false;
-        return;
-      }
-      const color = sequence[i];
-      const btn = displaySeq.querySelector(`.pattern-btn.${color}`);
-      if (btn) {
-        btn.classList.add('lit');
-        setTimeout(() => btn.classList.remove('lit'), 450);
-      }
-      i++;
-    }, 650);
-  }
-
-  function handlePlayerClick(container, color) {
-    if (isPlaying) return;
-    if (color !== sequence[playerIndex]) {
-      container.querySelector('.game-info').textContent = 'Greșit! Apasă "Începe" pentru a reîncerca.';
-      playerIndex = 0;
-      return;
-    }
-    playerIndex++;
-    if (playerIndex >= sequence.length) {
-      if (sequence.length >= 5) {
-        const levelEl = document.getElementById('pattern-level');
-        if (levelEl) levelEl.textContent = sequence.length;
-        if (typeof gameWon === 'function') gameWon({ gameId: 'bratari', score: sequence.length, scoreDisplay: 'Nivel ' + sequence.length, scoreLabel: 'Nivel atins' });
-        else showWinOverlay();
-        return;
-      }
-      addToSequence();
-      playerIndex = 0;
-      container.querySelector('.game-info').textContent = `Nivel ${sequence.length}! Memorează secvența...`;
-      setTimeout(() => playSequence(container), 900);
-    }
+  function newRound() {
+    const colors = [...BRATARI_BEAD_COLORS].sort(() => Math.random() - 0.5);
+    normalColor = colors[0];
+    oddColor = colors[1];
+    positions = [0, 1, 2, 3, 4].sort(() => Math.random() - 0.5);
+    oddPos = positions[0];
   }
 
   return {
     render(container) {
-      sequence = [PATTERN_COLORS[Math.floor(Math.random() * PATTERN_COLORS.length)]];
-      playerIndex = 0;
+      round = 0;
+      startTime = Date.now();
+      newRound();
+
+      function renderRound() {
+        const grid = container.querySelector('.oddone-grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+        for (let i = 0; i < 5; i++) {
+          const btn = document.createElement('button');
+          const color = i === oddPos ? oddColor : normalColor;
+          btn.className = `pattern-btn oddone-btn bead-${color}`;
+          btn.dataset.odd = (i === oddPos).toString();
+          btn.addEventListener('click', () => {
+            if (btn.dataset.odd === 'true') {
+              round++;
+              const info = container.querySelector('.game-info');
+              if (info) info.textContent = `Corect! Runda ${round} din ${BRATARI_ROUNDS}`;
+              if (round >= BRATARI_ROUNDS) {
+                const sec = Math.round((Date.now() - startTime) / 1000);
+                if (typeof gameWon === 'function') gameWon({ gameId: 'bratari', score: sec, scoreDisplay: sec + ' sec', scoreLabel: 'Timp', scoreType: 'time' });
+                else showWinOverlay();
+                return;
+              }
+              newRound();
+              renderRound();
+            } else {
+              const info = container.querySelector('.game-info');
+              if (info) info.textContent = 'Greșit! Apasă "Reîncearcă" pentru a încerca din nou.';
+              btn.classList.add('wrong');
+              setTimeout(() => btn.classList.remove('wrong'), 400);
+            }
+          });
+          grid.appendChild(btn);
+        }
+      }
+
       container.innerHTML = `
-        <h2 class="game-title">⌚ Modelul Brățărilor</h2>
-        <p class="game-info">Memorează secvența și repet-o! Nivel 1</p>
+        <h2 class="game-title">📿 Mărgeaua Diferită</h2>
+        <p class="game-info">Pe brățara antică, găsește mărgeaua de culoare diferită! Runda 1 din ${BRATARI_ROUNDS}</p>
         <p class="game-timer">Timp: 0:00</p>
-        <div class="pattern-game">
-          <p style="margin: 12px 0; font-weight: 700;">Secvența:</p>
-          <div class="pattern-sequence pattern-display">
-            ${PATTERN_COLORS.map(c => `<span class="pattern-btn ${c}">${PATTERN_EMOJI[c]}</span>`).join('')}
-          </div>
-          <button class="start-pattern-btn">Începe</button>
-          <p style="margin: 16px 0; font-weight: 700;">Repetă secvența:</p>
-          <div class="pattern-input">
-            ${PATTERN_COLORS.map(c => `<button class="pattern-btn ${c}" data-color="${c}">${PATTERN_EMOJI[c]}</button>`).join('')}
-          </div>
+        <div class="pattern-game oddone-game">
+          <p style="margin: 12px 0; font-weight: 700;">Care mărgea e de altă culoare?</p>
+          <div class="oddone-grid"></div>
+          <button class="start-pattern-btn" id="oddoneRetry">Reîncearcă</button>
         </div>
       `;
-      startLiveTimer(container, { startTime: Date.now() });
-      const displaySeq = container.querySelector('.pattern-display');
-      if (displaySeq) displaySeq.querySelectorAll('.pattern-btn').forEach(b => { b.style.pointerEvents = 'none'; });
-      container.querySelector('.start-pattern-btn')?.addEventListener('click', () => {
-        sequence = [PATTERN_COLORS[Math.floor(Math.random() * PATTERN_COLORS.length)]];
-        playerIndex = 0;
-        container.querySelector('.game-info').textContent = 'Nivel 1! Memorează...';
-        playSequence(container);
+      startLiveTimer(container, { startTime });
+      renderRound();
+      container.querySelector('#oddoneRetry')?.addEventListener('click', () => {
+        round = 0;
+        startTime = Date.now();
+        newRound();
+        const info = container.querySelector('.game-info');
+        if (info) info.textContent = `Runda 1 din ${BRATARI_ROUNDS}`;
+        renderRound();
       });
-      container.querySelectorAll('.pattern-input .pattern-btn').forEach(btn => {
-        btn.addEventListener('click', () => handlePlayerClick(container, btn.dataset.color));
-      });
-      setTimeout(() => playSequence(container), 900);
     }
   };
 }
@@ -763,7 +754,7 @@ function createLegoGame() {
   const BRICK_H = 24;
   const PLATFORM_W = 80;
   const PLATFORM_H = 20;
-  const TARGET = 20;
+  const TARGET = 10;
   let platformX = W / 2 - PLATFORM_W / 2;
   let score = 0;
   let bricks = [];
@@ -773,7 +764,7 @@ function createLegoGame() {
 
   function spawnBrick() {
     if (bricks.length > 0) return;
-    if (Math.random() < 0.04) {
+    if (Math.random() < 0.12) {
       const color = LEGO_COLORS[Math.floor(Math.random() * LEGO_COLORS.length)];
       bricks.push({
         x: Math.random() * (W - BRICK_W),
@@ -826,7 +817,7 @@ function createLegoGame() {
   }
 
   function update(container) {
-    bricks.forEach(b => b.y += 1.5);
+    bricks.forEach(b => b.y += 2.8);
     bricks = bricks.filter(b => {
       if (b.y > H) {
         gameOver = true;
@@ -909,7 +900,6 @@ const GAMES = {
   mammoth: createMemoryGame,
   monoxyl: createMonoxylGame,
   pazitorul: createPuzzleGame,
-  genius: createGeniusQuiz,
   pietre: createDecoderGame,
   bratari: createPatternGame,
   secera: createSeceraGame,
