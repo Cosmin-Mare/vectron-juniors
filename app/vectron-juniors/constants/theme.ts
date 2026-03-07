@@ -68,7 +68,7 @@ export const GAMES = [
     id: 'lego',
     icon: '🧱',
     title: 'Turnul LEGO',
-    desc: 'Completează toate cele 7 jocuri pentru a debloca!',
+    desc: 'Completează toate cele 6 jocuri pentru a debloca!',
     locked: true,
     education: {
       title: '🧱 Turnul LEGO',
