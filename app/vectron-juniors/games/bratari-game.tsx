@@ -60,7 +60,7 @@ export function BratariGame() {
         const sec = Math.round((Date.now() - startTime) / 1000);
         markGameWon('bratari');
         getUserName().then((name) => {
-          submitScore('bratari', sec, sec + ' sec', name || 'Jucător');
+          submitScore('bratari', -sec, sec + ' sec', name || 'Jucător');
         });
         setShowWin(true);
         return;

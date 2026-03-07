@@ -60,10 +60,14 @@
     return pushPromise;
   };
 
-  const LOWER_IS_BETTER = ['mammoth', 'pazitorul', 'pietre'];
+  /**
+   * Time games store negative seconds; best = least negative (e.g. -20 beats -60).
+   * Points games: best = highest. Both use limitToLast + descending sort for best-first display.
+   */
+  const LOWER_IS_BETTER = [];
 
   /**
-   * Get top scores for a game. Time games: best = lowest (most negative). Points games: best = highest.
+   * Get top scores for a game. Time games: best = least negative. Points games: best = highest.
    */
   window.getLeaderboard = function(gameId, limit = 10) {
     if (!init()) return Promise.resolve([]);

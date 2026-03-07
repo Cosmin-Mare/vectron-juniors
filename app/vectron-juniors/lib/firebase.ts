@@ -80,7 +80,11 @@ export async function submitScore(
   return { key: pushed.key ?? '', ...entry };
 }
 
-const LOWER_IS_BETTER = new Set(['mammoth', 'pazitorul', 'pietre']);
+/**
+ * Time games store negative seconds; best = least negative (e.g. -20 beats -60).
+ * Points games: best = highest. Both use limitToLast + descending sort for best-first display.
+ */
+const LOWER_IS_BETTER = new Set<string>();
 
 function processScoreEntries(
   rawEntries: LeaderboardEntry[],
