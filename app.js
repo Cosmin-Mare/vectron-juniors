@@ -12,8 +12,9 @@
       <div class="popup-center">
         <div class="education-popup username-popup lego-intro-popup">
           <h3>🧱 Bine ai venit, ${name || 'Explorator'}!</h3>
-          <p>Ai un joc bonus special: <strong>Turnul LEGO</strong>
-          <p>Completează toate cele 6 jocuri pentru a-l debloca. Mult succes! 🎉</p>
+          <p>Ai un joc bonus special: <strong>Turnul LEGO</strong>. Completează toate cele 6 jocuri pentru a-l debloca.</p>
+          <p><strong>Vino la standul Vectron Juniors pentru a primi un premiu!</strong> 🎁</p>
+          <p>Mult succes! 🎉</p>
           <button class="popup-btn" id="lego-intro-ok">Am înțeles!</button>
         </div>
       </div>

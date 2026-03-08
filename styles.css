@@ -387,6 +387,12 @@ body.page-game {
   margin-bottom: 24px !important;
 }
 
+.win-prize {
+  font-size: 1.1rem !important;
+  color: #15803d !important;
+  margin-bottom: 20px !important;
+}
+
 .win-btn {
   display: inline-block;
   padding: 16px 32px;
