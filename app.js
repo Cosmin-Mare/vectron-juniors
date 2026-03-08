@@ -105,6 +105,6 @@
   window.showUsernameModal = showUsernameModal;
 
   document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('username-check')) checkUsername();
+    checkUsername();
   });
 })();
